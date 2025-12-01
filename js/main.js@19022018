@@ -1,0 +1,1 @@
+function fadeOut(n,t){this.animate(function(t){n.style.opacity=1-t},t)}function fadeIn(n,t){this.animate(function(t){n.style.opacity=0+t},t)}function animate(n,a){var e=new Date,i=setInterval(function(){var t=(new Date-e)/200;n(t=1<t?1:t),1==t&&(clearInterval(i),a)&&a()},10)}
