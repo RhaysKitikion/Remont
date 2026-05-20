@@ -1,4 +1,7 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 $token = '8320968608:AAGoXqKoeGLe6uPsdYPSisICjGOOdgO-6-0';
 $chat_id = '403593894';
 
@@ -11,24 +14,26 @@ if (!$data || empty($data['text'])) {
 $text = $data['text'];
 
 $url = "https://api.telegram.org/bot{$token}/sendMessage";
-$options = [
-    'http' => [
-        'header'  => "Content-type: application/json\r\n",
-        'method'  => 'POST',
-        'content' => json_encode([
-            'chat_id' => $chat_id,
-            'text' => $text,
-            'parse_mode' => 'HTML'
-        ])
-    ]
-];
+$payload = json_encode([
+    'chat_id' => $chat_id,
+    'text' => $text,
+    'parse_mode' => 'HTML'
+]);
 
-$context  = stream_context_create($options);
-$result = file_get_contents($url, false, $context);
+$ch = curl_init($url);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$result = curl_exec($ch);
+$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
 
-if ($result === FALSE) {
+if ($result === false || $http_code != 200) {
     http_response_code(502);
-    die('Telegram API error');
+    echo 'Telegram API error';
+    error_log("Telegram send error: HTTP $http_code, Response: $result");
+    exit;
 }
 
 header('Content-Type: application/json');
